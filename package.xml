@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>universal_robot_test</name>
+  <version>0.0.1</version>
+  <description>Test for universal_robot changes</description>
+
+  <maintainer email="grey@openrobotics.org">Grey</maintainer>
+  <license>Apache License 2.0</license>
+
+  <depend>ur_kinematics</depend>
+  <exec_depend>ur3_moveit_config</exec_depend>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <export>
+  </export>
+
+</package>
