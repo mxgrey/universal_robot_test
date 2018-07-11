@@ -39,19 +39,17 @@ int main(int argc, char* argv[])
 
   std::vector<double> q;
   q.assign(6, 0.0);
-  double T[16];
 
-  // Get transform for all-zero joint config to start with
-  ur_kinematics::forward(q.data(), T);
-
-  Eigen::Isometry3d tf{Eigen::Map<Eigen::Matrix<double, 4, 4, Eigen::RowMajor>>(T)};
+  Eigen::Isometry3d tf_orig = Eigen::Isometry3d::Identity();
+  tf_orig.translation() = Eigen::Vector3d(0.30, 0.18, 0.18);
+  tf_orig.rotate(Eigen::Quaterniond(0.0, 0.0, 1.0/std::sqrt(2.0), 1.0/std::sqrt(2.0)));
 
   std::vector<double> solution;
   moveit_msgs::MoveItErrorCodes error_code;
 
   std::random_device rd;
   std::mt19937 mt(rd());
-  std::uniform_real_distribution<double> dist(-0.1, 0.1);
+  std::uniform_real_distribution<double> dist(-0.01, 0.01);
 
   // Pre-generate randomized values
   const std::size_t N = 100000;
@@ -64,19 +62,20 @@ int main(int argc, char* argv[])
     }
   }
 
+  bool solved = false;
   ROS_INFO(" ==== Beginning performance test iterations ==== ");
   auto start = std::chrono::high_resolution_clock::now();
-
   for(size_t i=0; i < N; ++i)
   {
-    geometry_msgs::Pose pose = convertPose(tf);
+    Eigen::Isometry3d tf = tf_orig;
     tf.translation().x() += randomized_values[i][0];
     tf.translation().y() += randomized_values[i][1];
     tf.translation().z() += randomized_values[i][2];
 
-    test.getPositionIK(pose, q, solution, error_code);
-  }
+    geometry_msgs::Pose pose = convertPose(tf);
 
+    solved = test.getPositionIK(pose, q, solution, error_code);
+  }
   auto end = std::chrono::high_resolution_clock::now();
 
   std::chrono::duration<double> diff = end-start;
